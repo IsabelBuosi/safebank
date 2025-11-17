@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Paleta customizada */
+:root {
+  --primary: #4C82F7;
+}
