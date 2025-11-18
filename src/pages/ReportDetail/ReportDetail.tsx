@@ -5,7 +5,6 @@ import Comment from "../../components/Comment";
 export default function ReportDetail() {
   const { id } = useParams();
 
-  // depois vamos buscar do backend
   const report = {
     id,
     title: "Golpe do Falso Suporte do Banco X",
@@ -39,70 +38,72 @@ export default function ReportDetail() {
   };
 
   return (
-    <div className="bg-background-light dark:bg-background-dark min-h-screen p-4 max-w-xl mx-auto">
-      {/* Top Bar */}
-      <header className="sticky top-0 flex items-center justify-between p-4 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm border-b border-white/10">
-        <Link to="/" className="text-black dark:text-white">
-          <span className="material-symbols-outlined">arrow_back</span>
+    <div className="bg-background-light dark:bg-background-dark min-h-screen max-w-xl mx-auto">
+
+      <header className="sticky top-0 flex items-center justify-between px-4 py-3 bg-surface-light/80 dark:bg-surface-dark/80 backdrop-blur-sm border-b border-white/10 z-50">
+        <Link to="/" className="text-primary-dark dark:text-primary-light">
+          <span className="material-symbols-outlined text-3xl">⭠</span>
         </Link>
-        <h1 className="text-lg font-bold text-black dark:text-white">Detalhes</h1>
-        <button className="text-black dark:text-white">
-          <span className="material-symbols-outlined">share</span>
+        <h1 className="text-lg font-bold text-primary-dark dark:text-primary-light">
+          Detalhes
+        </h1>
+        <button className="text-primary-dark dark:text-primary-light">
+          <span className="material-symbols-outlined text-3xl">➦</span>
         </button>
       </header>
 
-      {/* Title */}
-      <main className="flex flex-col gap-6 p-2 pb-24">
+      <main className="flex flex-col gap-6 p-4 pb-24">
+
         <section>
-          <h2 className="text-3xl font-bold text-black dark:text-white">
+          <h2 className="text-2xl font-bold text-primary-dark dark:text-white">
             {report.title}
           </h2>
+
           <p className="text-sm text-black/60 dark:text-white/60">
             Postado por {report.author} em {report.date}
           </p>
 
-          {/* Tags */}
-          <div className="flex flex-wrap gap-2 mt-2">
+          <div className="flex flex-wrap gap-2 mt-3">
             {report.tags.map((tag) => (
               <span
                 key={tag}
-                className="px-4 py-1 text-sm font-medium bg-primary/20 rounded-lg text-amber-800 dark:text-primary"
+                className="px-4 py-1 text-sm font-medium rounded-lg bg-primary/20 text-primary-dark dark:bg-primary/30 dark:text-white"
               >
                 {tag}
               </span>
             ))}
           </div>
 
-          {/* Description */}
           <p className="mt-4 text-black/80 dark:text-white/80 leading-relaxed">
             {report.description}
           </p>
         </section>
 
-        {/* Images */}
         <section>
-          <h3 className="text-xl font-bold text-black dark:text-white mb-2">
+          <h3 className="text-xl font-bold text-primary-dark dark:text-white mb-2">
             Evidências Visuais
           </h3>
           <ImageCarousel images={report.images} />
         </section>
 
-        {/* Buttons */}
-        <section className="flex gap-4 border-t border-white/10 pt-4">
-          <button className="w-full h-12 bg-blue-900 text-white rounded-lg flex items-center justify-center gap-2">
-            <span className="material-symbols-outlined">thumb_up</span>
+        <section className="flex gap-4 pt-4 border-t border-white/10">
+          <button className="w-full h-12 rounded-xl font-semibold text-white
+              bg-gradient-to-r from-primary-500 to-accent-500
+              shadow-glow hover:scale-[1.03] active:scale-95
+              transition-transform disabled:opacity-50
+            ">
+            <span className="material-symbols-outlined">👍</span>
             Achei útil
           </button>
 
-          <button className="w-full h-12 bg-red-500/20 text-red-600 rounded-lg flex items-center justify-center gap-2 dark:text-red-400">
-            <span className="material-symbols-outlined">flag</span>
+          <button className="w-full h-12 rounded-xl bg-red-600/20 text-red-600 dark:text-red-400 flex items-center justify-center gap-2">
+            <span className="material-symbols-outlined">🚩</span>
             Reportar
           </button>
         </section>
 
-        {/* Comments */}
-        <section className="border-t border-white/10 pt-4">
-          <h3 className="text-xl font-bold text-black dark:text-white mb-4">
+        <section className="pt-4 border-t border-white/10">
+          <h3 className="text-xl font-bold text-primary-dark dark:text-white mb-4">
             Comentários
           </h3>
 
@@ -112,6 +113,7 @@ export default function ReportDetail() {
             ))}
           </div>
         </section>
+
       </main>
     </div>
   );

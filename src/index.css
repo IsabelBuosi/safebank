@@ -2,7 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Paleta customizada */
+html, body {
+  @apply bg-background-light dark:bg-background-dark text-black dark:text-white transition-colors duration-300;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+*:focus {
+  outline: none !important;
+}
+
+.btn-gradient {
+  background: linear-gradient(135deg, #6b3aff 0%, #1a6cff 100%);
+}
+
 :root {
-  --primary: #4C82F7;
+  --primary: #6b3aff;
+  --primary-dark: #472399;
+  --accent: #1a6cff;
 }

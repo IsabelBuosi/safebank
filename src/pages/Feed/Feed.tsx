@@ -1,4 +1,3 @@
-import Header from "../../components/Header";
 import PostCard from "../../components/PostCard";
 import { Link } from "react-router-dom";
 
@@ -37,47 +36,28 @@ export default function Feed() {
   ];
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark font-display">
+    <div className="min-h-screen bg-background-light dark:bg-background-dark">
 
-      {/* Cabeçalho */}
-      <Header
-        title="Relatos Recentes"
-        left={
-          <img
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDK7g7BDVQ7LW5ozgb-ynzc3Ed8_KuWTzJwna9VU6R5L9uzqMBMLbh2TdGdbcmc4nf_cZHcQ8wT5uuZFHY9CPpLcCwhlmlNtvG7QSWv6Wkl_KruqzZTnCec1_ZRtnex0uDGpELu75IRR-tj0SMEkQBlV_-PKIGMjmVmNG8gWTrBgpONcNXeLwHXRXYNmRG4s80LKZ85B2IyxqJR0oXjFXcGNasZoPq_ZePF_ho7pJNOymSLfKhprWqDYtTV_eGrKGbNxp6rLI9VK_Y"
-            className="h-10 w-10 rounded-full"
-          />
-        }
-        right={
-          <>
-            <button className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-white/10 text-black dark:text-white">
-              <span className="material-symbols-outlined">notifications</span>
-            </button>
-          </>
-        }
-      />
-
-      {/* Campo de pesquisa */}
-      <div className="sticky top-16 bg-background-light dark:bg-background-dark px-4 py-3">
+      <div className="sticky top-16 px-4 py-5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm border-b borderc-light dark:borderc-dark">
         <div className="relative">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-black/60 dark:text-white/60">
-            search
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary-500">
+              🔍︎
           </span>
 
           <input
             type="text"
-            placeholder="Pesquisar por categoria..."
-            className="w-full rounded-full border border-gray-300 bg-white py-2 pl-10 pr-4 dark:border-white/20 dark:bg-white/5 dark:text-white"
+            placeholder="Pesquisar por palavra chave..."
+            className="w-full rounded-full border borderc-light dark:borderc-dark bg-surface-light dark:bg-surface-dark py-2 pl-10 pr-4 text-black dark:text-white focus:ring-2 focus:ring-primary-500"
           />
         </div>
       </div>
 
-      {/* Lista de relatos */}
-      <main className="flex flex-col gap-4 p-4 pb-24">
+      <main className="flex flex-col gap-5 p-4 pb-24">
         {posts.map((p) => (
           <PostCard key={p.id} {...p} />
         ))}
       </main>
+
     </div>
   );
 }

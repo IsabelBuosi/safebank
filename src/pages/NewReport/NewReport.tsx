@@ -4,13 +4,11 @@ import { Link, useNavigate } from "react-router-dom";
 export default function NewReport() {
   const navigate = useNavigate();
 
-  // Campos do formulário
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [company, setCompany] = useState("");
   const [images, setImages] = useState<File[]>([]);
 
-  // Para pré-visualização
   const previewImages = images.map((img) => URL.createObjectURL(img));
 
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -26,78 +24,67 @@ export default function NewReport() {
       return;
     }
 
-    // Depois trocamos para envio real ao backend
-    console.log({
-      title,
-      description,
-      company,
-      images,
-    });
+    console.log({ title, description, company, images });
 
-    // Volta ao feed após enviar
     navigate("/");
   }
 
   return (
-    <div className="bg-background-light dark:bg-background-dark min-h-screen p-4 max-w-xl mx-auto">
+    <div className="bg-background-light dark:bg-background-dark min-h-screen max-w-xl mx-auto">
 
-      {/* Top Bar */}
-      <header className="sticky top-0 flex items-center justify-between p-4 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm border-b border-white/10">
-        <Link to="/" className="text-black dark:text-white">
-          <span className="material-symbols-outlined">arrow_back</span>
+      <header className="sticky top-0 flex items-center justify-between px-4 py-3 bg-surface-light/80 dark:bg-surface-dark/80 backdrop-blur-sm border-b border-white/10 z-50">
+        <Link to="/" className="text-primary-dark dark:text-primary-light">
+          <span className="material-symbols-outlined text-3xl">⭠</span>
         </Link>
-        <h1 className="text-lg font-bold text-black dark:text-white">Novo Relato</h1>
+        <h1 className="text-lg font-bold text-primary-dark dark:text-primary-light">
+          Novo Relato
+        </h1>
         <span className="w-6"></span>
       </header>
 
-      {/* Formulário */}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6 p-2 pb-24">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6 p-4 pb-24">
 
-        {/* Título */}
         <div>
-          <label className="block font-semibold mb-1 text-black dark:text-white">
+          <label className="block font-semibold mb-1 text-primary-dark dark:text-primary-light">
             Título do Relato *
           </label>
           <input
             type="text"
-            className="w-full rounded-lg bg-white/10 border border-white/20 p-3 text-black dark:text-white"
-            placeholder="Ex: Golpe do falso atendente do Banco"
+            className="w-full rounded-xl bg-surface-light dark:bg-surface-dark border border-primary/30 p-3 text-black dark:text-white"
+            placeholder="Ex: Golpe do falso atendente do banco"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
         </div>
 
-        {/* Empresa */}
         <div>
-          <label className="block font-semibold mb-1 text-black dark:text-white">
+          <label className="block font-semibold mb-1 text-primary-dark dark:text-primary-light">
             Empresa Relacionada (opcional)
           </label>
           <input
             type="text"
-            className="w-full rounded-lg bg-white/10 border border-white/20 p-3 text-black dark:text-white"
+            className="w-full rounded-xl bg-surface-light dark:bg-surface-dark border border-primary/30 p-3 text-black dark:text-white"
             placeholder="Ex: Banco X, Loja Y..."
             value={company}
             onChange={(e) => setCompany(e.target.value)}
           />
         </div>
 
-        {/* Descrição */}
         <div>
-          <label className="block font-semibold mb-1 text-black dark:text-white">
+          <label className="block font-semibold mb-1 text-primary-dark dark:text-primary-light">
             Descrição Detalhada *
           </label>
           <textarea
-            className="w-full rounded-lg bg-white/10 border border-white/20 p-3 h-32 resize-none text-black dark:text-white"
+            className="w-full h-32 resize-none rounded-xl bg-surface-light dark:bg-surface-dark border border-primary/30 p-3 text-black dark:text-white"
             placeholder="Explique o que aconteceu, como o golpe funciona..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           ></textarea>
         </div>
 
-        {/* Upload de imagens */}
         <div>
-          <label className="block font-semibold mb-2 text-black dark:text-white">
-            Evidências Visuais (imagens)
+          <label className="block font-semibold mb-2 text-primary-dark dark:text-primary-light">
+            Evidências Visuais
           </label>
 
           <input
@@ -108,26 +95,28 @@ export default function NewReport() {
             className="text-black dark:text-white"
           />
 
-          {/* Preview */}
           {previewImages.length > 0 && (
             <div className="mt-4 grid grid-cols-2 gap-2">
-              {previewImages.map((src, index) => (
+              {previewImages.map((src, i) => (
                 <img
-                  key={index}
+                  key={i}
                   src={src}
-                  className="rounded-lg w-full aspect-video object-cover"
+                  className="w-full aspect-video object-cover rounded-xl"
                 />
               ))}
             </div>
           )}
         </div>
-
-        {/* Botão enviar */}
         <button
           type="submit"
-          className="w-full h-12 bg-blue-900 hover:bg-blue-800 text-white rounded-lg font-bold flex items-center justify-center gap-2"
-        >
-          <span className="material-symbols-outlined">send</span>
+            className="
+              mt-4 py-3 rounded-xl w-full font-semibold text-white
+              bg-gradient-to-r from-primary-500 to-accent-500
+              shadow-glow hover:scale-[1.03] active:scale-95
+              transition-transform disabled:opacity-50
+            "
+          >
+          <span className="material-symbols-outlined text-2xl">send</span>
           Enviar Relato
         </button>
 
