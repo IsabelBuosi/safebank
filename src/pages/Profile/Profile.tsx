@@ -59,6 +59,7 @@ export default function Profile() {
   }
 
   function logout() {
+    localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/login");
   }

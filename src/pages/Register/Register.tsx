@@ -1,187 +1,80 @@
+// pages/Register/Register.tsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function Register() {
   const navigate = useNavigate();
-
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [cidade, setCidade] = useState("");
   const [idade, setIdade] = useState<number | "">("");
-
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
-  const [success, setSuccess] = useState("");
+  const [sucesso, setSucesso] = useState("");
 
-  async function handleRegister(e: React.FormEvent) {
-    e.preventDefault();
-    setErro("");
-    setSuccess("");
-    setLoading(true);
+// pages/Register/Register.tsx
+async function handleRegister(e: React.FormEvent) {
+  e.preventDefault();
+  setErro("");
+  setLoading(true);
 
-    try {
-      const res = await fetch("http://localhost:3000/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nome,
-          email,
-          senha,
-          cidade,
-          idade: idade === "" ? null : idade,
-        }),
-      });
+  try {
+    const res = await fetch("http://localhost:8080/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: nome,
+        email,
+        password: senha,
+        city: cidade || null,
+        age: idade === "" ? null : Number(idade),
+      }),
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      if (!res.ok) throw new Error(data.message || "Erro ao cadastrar");
-
-      setSuccess("Cadastro realizado com sucesso!");
-
-      setTimeout(() => navigate("/login"), 1000);
-    } catch (err: any) {
-      setErro(err.message || "Erro inesperado");
-    } finally {
-      setLoading(false);
+    if (!res.ok) {
+      throw new Error(data.message || "Erro ao cadastrar");
     }
+
+    alert("Cadastrado com sucesso! Faça login.");
+    navigate("/login");
+
+  } catch (err: any) {
+    setErro(err.message || "Erro de conexão");
+  } finally {
+    setLoading(false);
   }
-
+}
   return (
-    <div className="min-h-screen flex items-center justify-center 
-      bg-background-light dark:bg-background-dark p-6 font-display">
-
-      <div className="
-        w-full max-w-[420px] p-8 rounded-card shadow-soft
-        bg-surface-light dark:bg-surface-dark
-        border borderc-light dark:borderc-dark
-      ">
-
-        <h1 className="text-3xl font-bold text-center mb-8 
-          bg-gradient-to-r from-primary-500 to-accent-400 
-          bg-clip-text text-transparent">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-6">
+      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 border border-purple-200 dark:border-purple-700">
+        <h1 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
           Criar Conta
         </h1>
 
-        <form onSubmit={handleRegister} className="flex flex-col gap-4">
+        <form onSubmit={handleRegister} className="space-y-5">
+          <input placeholder="Nome completo" type="text" value={nome} onChange={e => setNome(e.target.value)} required className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-4 focus:ring-purple-300" />
+          <input placeholder="E-mail" type="email" value={email} onChange={e => setEmail(e.target.value)} required className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-4 focus:ring-purple-300" />
+          <input placeholder="Senha" type="password" value={senha} onChange={e => setSenha(e.target.value)} required minLength={6} className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-4 focus:ring-purple-300" />
+          <input placeholder="Cidade (opcional)" type="text" value={cidade} onChange={e => setCidade(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700" />
+          <input placeholder="Idade" type="number" value={idade} onChange={e => setIdade(e.target.value === "" ? "" : Number(e.target.value))} required min="13" className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700" />
 
-          <div>
-            <label className="text-sm text-primary-700 dark:text-primary-300 font-medium">
-              Nome completo
-            </label>
-            <input
-              type="text"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              required
-              className="
-                w-full mt-1 rounded-xl p-3
-                bg-surface-light dark:bg-surface-soft
-                border borderc-light dark:borderc-dark
-                text-black dark:text-white
-                focus:ring-2 focus:ring-primary-400 focus:border-transparent
-              "
-            />
-          </div>
-
-          <div>
-            <label className="text-sm text-primary-700 dark:text-primary-300 font-medium">
-              E-mail
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="
-                w-full mt-1 rounded-xl p-3
-                bg-surface-light dark:bg-surface-soft
-                border borderc-light dark:borderc-dark
-                text-black dark:text-white
-                focus:ring-2 focus:ring-primary-400 focus:border-transparent
-              "
-            />
-          </div>
-
-          <div>
-            <label className="text-sm text-primary-700 dark:text-primary-300 font-medium">
-              Senha
-            </label>
-            <input
-              type="password"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              required
-              className="
-                w-full mt-1 rounded-xl p-3
-                bg-surface-light dark:bg-surface-soft
-                border borderc-light dark:borderc-dark
-                text-black dark:text-white
-                focus:ring-2 focus:ring-primary-400 focus:border-transparent
-              "
-            />
-          </div>
-
-          <div>
-            <label className="text-sm text-primary-700 dark:text-primary-300 font-medium">
-              Cidade
-            </label>
-            <input
-              type="text"
-              value={cidade}
-              onChange={(e) => setCidade(e.target.value)}
-              className="
-                w-full mt-1 rounded-xl p-3
-                bg-surface-light dark:bg-surface-soft
-                border borderc-light dark:borderc-dark
-                text-black dark:text-white
-                focus:ring-2 focus:ring-primary-400 focus:border-transparent
-              "
-            />
-          </div>
-
-          <div>
-            <label className="text-sm text-primary-700 dark:text-primary-300 font-medium">
-              Idade (opcional)
-            </label>
-            <input
-              type="number"
-              value={idade}
-              onChange={(e) =>
-                setIdade(e.target.value === "" ? "" : Number(e.target.value))
-              }
-              className="
-                w-full mt-1 rounded-xl p-3
-                bg-surface-light dark:bg-surface-soft
-                border borderc-light dark:borderc-dark
-                text-black dark:text-white
-                focus:ring-2 focus:ring-primary-400 focus:border-transparent
-              "
-            />
-          </div>
-
-          {erro && <p className="text-red-400 text-sm text-center">{erro}</p>}
-          {success && <p className="text-green-400 text-sm text-center">{success}</p>}
+          {erro && <p className="text-red-500 text-center font-medium bg-red-50 dark:bg-red-900/30 p-3 rounded-lg">{erro}</p>}
+          {sucesso && <p className="text-green-500 text-center font-medium bg-green-50 dark:bg-green-900/30 p-3 rounded-lg">{sucesso}</p>}
 
           <button
             type="submit"
             disabled={loading}
-            className="
-              mt-4 py-3 w-full rounded-xl font-semibold text-white
-              bg-gradient-to-r from-primary-500 to-accent-500
-              shadow-glow hover:scale-[1.03] active:scale-95 
-              transition-transform disabled:opacity-50
-            "
+            className="w-full py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold rounded-xl hover:scale-105 active:scale-95 transition shadow-lg disabled:opacity-60"
           >
-            {loading ? "Cadastrando..." : "Cadastrar"}
+            {loading ? "Criando conta..." : "Criar Conta"}
           </button>
         </form>
 
-        <p className="text-sm text-center mt-6 text-gray-700 dark:text-gray-300">
-          Já tem conta?{" "}
-          <Link className="text-primary-400 font-semibold hover:underline" to="/login">
-            Entrar
-          </Link>
+        <p className="text-center mt-6 text-gray-600 dark:text-gray-400">
+          Já tem conta? <Link to="/login" className="text-purple-600 font-bold hover:underline">Entrar</Link>
         </p>
       </div>
     </div>

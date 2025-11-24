@@ -1,63 +1,111 @@
+// pages/Feed/Feed.tsx
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import PostCard from "../../components/PostCard";
-import { Link } from "react-router-dom";
+import { api } from "../../lib/api";
+
+interface Report {
+  id: number;
+  title: string;
+  description: string;
+  createdAt: string;
+  user: {
+    id: number;
+    nome: string;        // ← era "name", agora "nome" (português)
+    email: string;
+  } | null;
+  reportImages: {
+    imageUrl: string;
+  }[];
+  likeCount?: number;
+  commentCount?: number;
+}
 
 export default function Feed() {
-  const posts = [
-    {
-      id: 1,
-      userAvatar:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuCKDLf1maC94nBRKKM-8vbl5rt0NMmICcseVSwRcq-L-62MeZ96i4lfx-uHc8ll8_wAMIDsVIkoTp6-l8r-N5nypSdeMoz-PdMLVhjVcemvB28hkRw7l96jvkWfOxfE-4I_hlmsXTL9cWrbDhQoz2rsLr9MeDIuCaxs5qrlZOTpd6qe76gGg8zeuL1SAx6BWUe6HdZLg0VuyOpCjbxJ3Ek4zsTgWuvZrSZXF-IzV_zJnBqqY-T01IArkX8yKw_4zvinllcQQww6NZQ",
-      userName: "Usuário Anônimo",
-      time: "2 horas atrás",
-      title: "Golpe do Falso PIX Agendado",
-      description:
-        "Recebi uma mensagem dizendo que ganhei um prêmio e me pediram para fazer um PIX...",
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBHMO_mrN5lvU-IpHi-fkmpFX7Dvj4Z1CZ5AqSoOu45RyTqKAoRPb_MX6juREESYUmgB_OhxtG5xH4ny6ccxd1YhtpIqwSOj_Y7kSPxc-TnXNB5_oNALagBLxfJBl9SdHqOyuMZERsfBa7--AKp8YeaWENg02kRzleWggvGZb1xsOZz1sdCR8B6KDJEolZep1BmLSmzu11dkUK4Ost___Ow1TDoZnSjzZsu0dECaqEahr2ghOovDUWFE3jSzH_VqX5fJZCSbQH-Yhk",
-      likes: 12,
-      comments: 5,
-      shares: 3,
-    },
-    {
-      id: 2,
-      userAvatar:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuDK7g7BDVQ7LW5ozgb-ynzc3Ed8_KuWTzJwna9VU6R5L9uzqMBMLbh2TdGdbcmc4nf_cZHcQ8wT5uuZFHY9CPpLcCwhlmlNtvG7QSWv6Wkl_KruqzZTnCec1_ZRtnex0uDGpELu75IRR-tj0SMEkQBlV_-PKIGMjmVmNG8gWTrBgpONcNXeLwHXRXYNmRG4s80LKZ85B2IyxqJR0oXjFXcGNasZoPq_ZePF_ho7pJNOymSLfKhprWqDYtTV_eGrKGbNxp6rLI9VK_Y",
-      userName: "Maria S.",
-      time: "5 horas atrás",
-      title: "Golpe do Empréstimo Consignado",
-      description:
-        "Ligaram se passando pelo banco e ofereceram um empréstimo com juros baixos...",
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuB9UtWoDKskVTK_Pe-EO2u6rYBQbsNQLhGKQbTif0VGuQaQNav_HyR8R7K9Wk-JwQ_Ip_Ccls1tfTWKuYdQX-qP0N-VO6rWZ5WGYZV1B25fCJv23kdewfI6vLiaJqo6yxAHJaIP6wOM1sfY6nV825hwoiWGvRNrXCjprnAoWoYO1hC0mJMJtKsYVasqT_fii8D1lGkD4VNxlp53mSXh47Y7h4STmWcbbjSnBJ-7VqMj-qouPpbmRqCuM9LzlTYu3XpuWCqM98ORMJk",
-      likes: 34,
-      comments: 12,
-      shares: 8,
-    },
-  ];
+  const [reports, setReports] = useState<Report[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    api.getReports()
+      .then((data) => {
+        setReports(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError("Erro ao carregar denúncias");
+        setLoading(false);
+      });
+  }, [navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-primary-500">
+        <div className="text-2xl">Carregando denúncias...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-500">
+        {error}
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark">
-
-      <div className="sticky top-16 px-4 py-5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm border-b borderc-light dark:borderc-dark">
-        <div className="relative">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary-500">
-              🔍︎
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 pb-24">
+      {/* Barra de busca */}
+      <div className="sticky top-16 px-4 py-4 bg-white/50 dark:bg-gray-900/40 backdrop-blur-md border-b border-purple-200 dark:border-purple-700 z-40">
+        <div className="relative max-w-[480px] mx-auto">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-purple-600 dark:text-purple-300">
+            ⌕
           </span>
-
           <input
             type="text"
-            placeholder="Pesquisar por palavra chave..."
-            className="w-full rounded-full border borderc-light dark:borderc-dark bg-surface-light dark:bg-surface-dark py-2 pl-10 pr-4 text-black dark:text-white focus:ring-2 focus:ring-primary-500"
+            placeholder="Pesquisar por palavra-chave..."
+            className="w-full rounded-full border border-purple-300 dark:border-purple-700 bg-gray-50 dark:bg-gray-700 py-3 pl-10 pr-4 text-black dark:text-white focus:ring-4 focus:ring-purple-300 outline-none transition"
           />
         </div>
       </div>
 
-      <main className="flex flex-col gap-5 p-4 pb-24">
-        {posts.map((p) => (
-          <PostCard key={p.id} {...p} />
-        ))}
+      {/* Conteúdo */}
+      <main className="max-w-[480px] mx-auto flex flex-col gap-5 p-4 pb-32">
+        {reports.length === 0 ? (
+          <div className="text-center text-gray-600 dark:text-gray-300 py-20">
+            Ainda não há denúncias. Seja a primeira a alertar!
+          </div>
+        ) : (
+          reports.map((r) => (
+            <PostCard
+              key={r.id}
+              id={r.id}
+              userName={r.user?.nome || "Anônimo"}
+              userAvatar={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(r.user?.nome || "A")}`}
+              time={new Date(r.createdAt).toLocaleDateString("pt-BR", {
+                day: "2-digit",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+              title={r.title}
+              description={r.description}
+              image={r.reportImages?.[0]?.imageUrl || undefined}
+              likes={r.likeCount ?? 0}
+              comments={r.commentCount ?? 0}
+              shares={0}
+            />
+          ))
+        )}
       </main>
-
     </div>
   );
 }

@@ -1,119 +1,272 @@
-import { useParams, Link } from "react-router-dom";
+// pages/ReportDetail/ReportDetail.tsx
+import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import ImageCarousel from "../../components/ImageCarousel";
 import Comment from "../../components/Comment";
 
-export default function ReportDetail() {
-  const { id } = useParams();
+type CommentType = {
+  id: number;
+  user: string;
+  avatar: string;
+  time: string;
+  text: string;
+};
 
-  const report = {
-    id,
-    title: "Golpe do Falso Suporte do Banco X",
-    author: "@usuario123",
-    date: "10/08/2024",
-    tags: ["Pix", "WhatsApp", "Falso Empréstimo"],
-    description:
-      "Descrição detalhada de como o golpe funciona, passo a passo. Os criminosos entram em contato via WhatsApp se passando por funcionários do banco...",
-    images: [
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDhp9pmv0I9laNFaoCvc06F0toFKBLkhGpPpwUiysuirFWHxy1QjD-x87_m5cUrNVCnC_5n7Fb-GEghNq2kq6WsqVLUx7N5dNGLEY5ntjPJoatYHHx67zvqhOFDc5kclFv9x1CDhUySlRnDFvcsr8UdCRGqk3ITCxE0ZB6juf7-K8lAnUaHhOdU_doHVbprMP5rhDF5Kh1ykEu1QXfx_V4_-IXcyfbsN1OSZ06hCoy3UzQfrsnTdADD-Obsn6wz_7CQQm510HQxS8Q",
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCCrmZ4dKPFNTT0hKqRKnmhXg4FC8bZMTLJbWZksxnuAnUiUURMU8a3w8KnQlzxeJz4GJmeUh3HQHXF2gzPK_6Qh-2Q7v9ZUca1PTZK80jLbJivdvSGdAmSg6Nroz-eJCAPgShtpb4BvbTeupAEXsswJgzlQvps4Z4yZ9nERjyxZcBtuPzvQhlaOGDKDJXfzG7x_S2vowVwgzSu4WhQsc2zJk2cCO4O1IX_bP1K_qlq-iCWb8fc5gh_HZrpRPQau6JIac_pKYGSyII",
-    ],
-    comments: [
-      {
-        id: 1,
-        user: "@maria_s",
-        time: "2h atrás",
-        avatar:
-          "https://lh3.googleusercontent.com/aida-public/AB6AXuDWUqgDoIpfBGhZiDzUvA4KJimHiVqXLdy76olbQTAWhr2hkw9Cwiuq2XOhAUSLn23nsYVhXdqldlE_dsE_eYtcRH45nDKQPRWdpGr4gLvAO1cdK4q6E6qj3-Rrog9oGq5x6GhzVG9KspUb9GvaOcl-ebhMhzWLnSgUggVXG28Bm9Ez30mZKSpHPjU9KoxQ8kXJ1lqBWRaO4lRMbXjtAFeu36yk-bX8yNx6M7CAGWMTpJvfzBzS1bxEbLK3LIKdFlXk9A3IVCzTJ_A",
-        text: "Quase caí nesse! A abordagem é muito convincente.",
-      },
-      {
-        id: 2,
-        user: "@joao_p",
-        time: "5h atrás",
-        avatar:
-          "https://lh3.googleusercontent.com/aida-public/AB6AXuBSyvODnx-oEnrKAAH5Qs1YfY24qHs3Z2PKKo_fcJvjSnl49V17lE9-e_uJ60-TgzsnLxc_tEptq0_J3Yj4AeMW-F_M9Zr7EHyR8Ktr8tjh70iGbyq0x7dDO3Bz4JnLuXn5CkdD2BMCfjUuHYF04Qt3me7XPOITkzL2zwYpW8zs1YYypwENTlmweCrhUkBs_Rp8gddvtbopdVHyqlEb1jwtRIHaJ2XrpPxbiXdla59cM85_xEF7Sm0DYrtPAqiJ69P-_m33AV7t2h8",
-        text: "Obrigado por compartilhar. Muito útil!",
-      },
-    ],
+export default function ReportDetail() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const reportId = Number(id);
+
+  const [report, setReport] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [newComment, setNewComment] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const API_URL = "http://localhost:8080";
+
+  useEffect(() => {
+    async function loadReport() {
+      if (!id || isNaN(reportId)) {
+        navigate("/");
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem("token");
+        const headers = {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        };
+
+        // Carrega o relato
+        const reportRes = await fetch(`${API_URL}/reports/${reportId}`, { headers });
+        if (!reportRes.ok) throw new Error("Relato não encontrado");
+        const reportData = await reportRes.json();
+
+        // Carrega comentários
+        const commentsRes = await fetch(`${API_URL}/comments/report/${reportId}`, { headers });
+        const commentsData = commentsRes.ok ? await commentsRes.json() : [];
+
+        // Carrega likes
+        const likeRes = await fetch(`${API_URL}/likes/report/${reportId}`, { headers });
+        const likeData = likeRes.ok ? await likeRes.json() : { totalLikes: 0, liked: false };
+
+        // Monta objeto final
+        setReport({
+          id: reportData.id,
+          title: reportData.title,
+          description: reportData.description,
+          author: reportData.user?.nome || "Anônimo",
+          authorAvatar: reportData.user?.avatar,
+          date: new Date(reportData.createdAt).toLocaleDateString("pt-BR", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          images: reportData.reportImages?.map((img: any) => img.imageUrl) || [],
+          likes: likeData.totalLikes || likeData.likes || 0,
+          likedByUser: likeData.liked || false,
+          comments: commentsData.map((c: any) => ({
+            id: c.id,
+            user: c.user?.nome || "Anônimo",
+            avatar: c.user?.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${c.user?.nome || "A"}`,
+            time: new Date(c.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+            text: c.text,
+          })),
+        });
+      } catch (err) {
+        console.error("Erro ao carregar relato:", err);
+        alert("Relato não encontrado ou erro de conexão");
+        navigate("/");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadReport();
+  }, [id, navigate]);
+
+  const toggleLike = async () => {
+    if (!report) return;
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(`http://localhost:8080/likes/report/${reportId}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const textoResposta = await res.text();
+      if (!res.ok) return;
+
+      let data;
+      try {
+        data = JSON.parse(textoResposta);
+      } catch {
+        return;
+      }
+
+      setReport((prev: any) => ({
+        ...prev,
+        likes: data.totalLikes ?? data.likes ?? prev.likes,
+        likedByUser: data.liked ?? false,
+      }));
+    } catch (err) {
+      console.error("Erro no toggleLike:", err);
+    }
   };
 
-  return (
-    <div className="bg-background-light dark:bg-background-dark min-h-screen max-w-xl mx-auto">
+  const addComment = async () => {
+    if (!newComment.trim() || sending) return;
+    setSending(true);
 
-      <header className="sticky top-0 flex items-center justify-between px-4 py-3 bg-surface-light/80 dark:bg-surface-dark/80 backdrop-blur-sm border-b border-white/10 z-50">
-        <Link to="/" className="text-primary-dark dark:text-primary-light">
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_URL}/comments/report/${reportId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text: newComment.trim() }),
+      });
+
+      if (!res.ok) throw new Error("Erro ao enviar comentário");
+      const data = await res.json();
+
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+      const newComm = {
+        id: data.id || Date.now(),
+        user: user.nome || "Você",
+        avatar: user.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${user.nome || "Você"}`,
+        time: "agora",
+        text: newComment.trim(),
+      };
+
+      setReport((prev: any) => ({
+        ...prev,
+        comments: [...prev.comments, newComm],
+      }));
+
+      setNewComment("");
+    } catch (err) {
+      alert("Erro ao enviar comentário");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+        <p className="text-xl font-medium text-primary-dark dark:text-primary-light">Carregando relato...</p>
+      </div>
+    );
+  }
+
+  if (!report) return null;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 pb-40">
+      {/* HEADER */}
+      <header className="sticky top-0 z-50 flex items-center justify-between px-4 py-3 bg-white/40 dark:bg-gray-900/40 backdrop-blur-md border-b border-purple-200 dark:border-purple-700 max-w-[480px] mx-auto">
+        <button onClick={() => navigate(-1)} className="text-purple-700 dark:text-purple-300">
           <span className="material-symbols-outlined text-3xl">⭠</span>
-        </Link>
-        <h1 className="text-lg font-bold text-primary-dark dark:text-primary-light">
-          Detalhes
-        </h1>
-        <button className="text-primary-dark dark:text-primary-light">
-          <span className="material-symbols-outlined text-3xl">➦</span>
+        </button>
+        <h1 className="text-lg font-bold text-purple-900 dark:text-white">Detalhes</h1>
+        <button className="text-purple-700 dark:text-purple-300">
+          <span className="material-symbols-outlined text-3xl">⌯⌲</span>
         </button>
       </header>
 
-      <main className="flex flex-col gap-6 p-4 pb-24">
-
-        <section>
-          <h2 className="text-2xl font-bold text-primary-dark dark:text-white">
-            {report.title}
-          </h2>
-
-          <p className="text-sm text-black/60 dark:text-white/60">
-            Postado por {report.author} em {report.date}
-          </p>
-
-          <div className="flex flex-wrap gap-2 mt-3">
-            {report.tags.map((tag) => (
-              <span
-                key={tag}
-                className="px-4 py-1 text-sm font-medium rounded-lg bg-primary/20 text-primary-dark dark:bg-primary/30 dark:text-white"
-              >
-                {tag}
-              </span>
-            ))}
+      <main className="max-w-[480px] mx-auto p-4 space-y-6">
+        {/* Autor */}
+        <div className="flex items-center gap-3">
+          <img
+            src={report.authorAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${report.author}`}
+            className="w-12 h-12 rounded-full ring-2 ring-purple-300 dark:ring-purple-600 object-cover"
+          />
+          <div>
+            <p className="font-bold text-purple-900 dark:text-white">{report.author}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{report.date}</p>
           </div>
+        </div>
 
-          <p className="mt-4 text-black/80 dark:text-white/80 leading-relaxed">
-            {report.description}
-          </p>
-        </section>
-
+        {/* Título */}
         <section>
-          <h3 className="text-xl font-bold text-primary-dark dark:text-white mb-2">
-            Evidências Visuais
-          </h3>
-          <ImageCarousel images={report.images} />
+          <h2 className="text-2xl font-bold mb-3 text-purple-900 dark:text-white">{report.title}</h2>
+          <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">{report.description}</p>
         </section>
 
-        <section className="flex gap-4 pt-4 border-t border-white/10">
-          <button className="w-full h-12 rounded-xl font-semibold text-white
-              bg-gradient-to-r from-primary-500 to-accent-500
-              shadow-glow hover:scale-[1.03] active:scale-95
-              transition-transform disabled:opacity-50
-            ">
-            <span className="material-symbols-outlined">👍</span>
-            Achei útil
+        {/* Imagens */}
+        {report.images.length > 0 && (
+          <section>
+            <h3 className="text-xl font-bold mb-3 text-purple-900 dark:text-white">Evidências</h3>
+            <ImageCarousel images={report.images} />
+          </section>
+        )}
+
+        {/* Ações */}
+        <section className="flex gap-3 pt-4">
+          <button
+            onClick={toggleLike}
+            className={`flex-1 py-4 rounded-xl font-bold shadow-lg hover:scale-105 active:scale-95 transition ${
+              report.likedByUser
+                ? "bg-red-600 text-white"
+                : "bg-gradient-to-r from-purple-600 to-blue-600 text-white"
+            }`}
+          >
+            🔥Achei útil ({report.likes})
           </button>
 
-          <button className="w-full h-12 rounded-xl bg-red-600/20 text-red-600 dark:text-red-400 flex items-center justify-center gap-2">
-            <span className="material-symbols-outlined">🚩</span>
-            Reportar
+          <button className="flex-1 py-4 rounded-xl bg-red-600/20 text-red-600 dark:text-red-400 font-bold border border-red-600/30">
+            🚩Reportar
           </button>
         </section>
 
-        <section className="pt-4 border-t border-white/10">
-          <h3 className="text-xl font-bold text-primary-dark dark:text-white mb-4">
-            Comentários
+        {/* Comentários */}
+        <section>
+          <h3 className="text-xl font-bold mb-4 text-purple-900 dark:text-white">
+            Comentários ({report.comments.length})
           </h3>
 
-          <div className="flex flex-col gap-4">
-            {report.comments.map((c) => (
-              <Comment key={c.id} comment={c} />
-            ))}
+          <div className="space-y-4">
+            {report.comments.length === 0 ? (
+              <p className="text-center text-gray-600 dark:text-gray-400 py-6">
+                Seja o primeiro a comentar!
+              </p>
+            ) : (
+              report.comments.map((c: CommentType) => <Comment key={c.id} comment={c} />)
+            )}
           </div>
         </section>
 
+        {/* Campo de comentário — AGORA ACIMA DO RODAPÉ */}
+        <section className="pt-6">
+          <div className="space-y-3">
+            <textarea
+              placeholder="Adicionar comentário..."
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              className="w-full max-w-[480px] mx-auto px-4 py-3 rounded-xl border border-purple-300 dark:border-purple-700 bg-gray-50 dark:bg-gray-700 focus:ring-4 focus:ring-purple-300 focus:outline-none resize-none text-black dark:text-white"
+            />
+
+            <button
+              onClick={addComment}
+              disabled={sending || !newComment.trim()}
+              className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold rounded-xl shadow-md hover:scale-105 active:scale-95 transition disabled:opacity-60"
+            >
+              {sending ? "Enviando..." : "Comentar"}
+            </button>
+          </div>
+        </section>
       </main>
     </div>
   );

@@ -1,9 +1,9 @@
+// pages/Login/Login.tsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function Login() {
   const navigate = useNavigate();
-
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
@@ -15,103 +15,83 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:3000/api/login", {
+      // COM PROXY DO VITE → usa só o caminho (sem localhost:8080)
+      const res = await fetch("/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, senha }),
+        body: JSON.stringify({ email, password: senha }),
       });
 
-      const data = await res.json();
+      const data = await res.text();
 
-      if (!res.ok) throw new Error(data.message || "Erro ao realizar login");
+      if (!res.ok) {
+        setErro(data || "E-mail ou senha incorretos");
+        return;
+      }
 
-      localStorage.setItem("user", JSON.stringify(data.user));
+      // Salva o token
+      localStorage.setItem("token", data);
+
+      // Pega os dados do usuário logado
+      const userRes = await fetch("/auth/me", {
+        headers: { Authorization: `Bearer ${data}` },
+      });
+
+      if (!userRes.ok) {
+        throw new Error("Erro ao carregar dados do usuário");
+      }
+
+      const user = await userRes.json();
+      localStorage.setItem("user", JSON.stringify(user));
 
       navigate("/");
-    } catch (err: any) {
-      setErro(err.message || "Erro inesperado");
+    } catch (err) {
+      console.error(err);
+      setErro("Erro de conexão. Verifique o backend.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center 
-      bg-background-light dark:bg-background-dark p-6 font-display">
-
-      <div className="
-        w-full max-w-[420px] p-8 rounded-card shadow-soft
-        bg-surface-light dark:bg-surface-dark
-        border borderc-light dark:borderc-dark
-      ">
-
-        <h1 className="text-3xl font-bold text-center mb-8 
-          bg-gradient-to-r from-primary-500 to-accent-400 
-          bg-clip-text text-transparent">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-6">
+      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 border border-purple-200 dark:border-purple-700">
+        <h1 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
           Entrar no SafeBank
         </h1>
 
-        <form onSubmit={handleLogin} className="flex flex-col gap-4">
+        <form onSubmit={handleLogin} className="space-y-5">
+          <input
+            placeholder="E-mail"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-4 focus:ring-purple-300"
+          />
+          <input
+            placeholder="Senha"
+            type="password"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+            required
+            className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-4 focus:ring-purple-300"
+          />
 
-          <div>
-            <label className="text-sm text-primary-700 dark:text-primary-300 font-medium">
-              E-mail
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="
-                w-full mt-1 rounded-xl p-3
-                bg-surface-light dark:bg-surface-soft 
-                border borderc-light dark:borderc-dark
-                text-black dark:text-white 
-                focus:ring-2 focus:ring-primary-400 focus:border-transparent
-              "
-            />
-          </div>
-
-          <div>
-            <label className="text-sm text-primary-700 dark:text-primary-300 font-medium">
-              Senha
-            </label>
-            <input
-              type="password"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              required
-              className="
-                w-full mt-1 rounded-xl p-3
-                bg-surface-light dark:bg-surface-soft 
-                border borderc-light dark:borderc-dark
-                text-black dark:text-white
-                focus:ring-2 focus:ring-primary-400 focus:border-transparent
-              "
-            />
-          </div>
-
-          {erro && (
-            <p className="text-red-400 text-sm text-center">{erro}</p>
-          )}
+          {erro && <p className="text-red-500 text-center font-medium">{erro}</p>}
 
           <button
             type="submit"
             disabled={loading}
-            className="
-              mt-4 py-3 rounded-xl w-full font-semibold text-white
-              bg-gradient-to-r from-primary-500 to-accent-500
-              shadow-glow hover:scale-[1.03] active:scale-95
-              transition-transform disabled:opacity-50
-            "
+            className="w-full py-4 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 disabled:opacity-70 transition"
           >
             {loading ? "Entrando..." : "Entrar"}
           </button>
         </form>
 
-        <p className="text-sm text-center mt-6 text-gray-600 dark:text-gray-300">
+        <p className="text-center mt-6 text-gray-600">
           Não tem conta?{" "}
-          <Link className="text-primary-400 font-semibold hover:underline" to="/register">
+          <Link to="/register" className="text-purple-600 font-bold hover:underline">
             Cadastre-se
           </Link>
         </p>
